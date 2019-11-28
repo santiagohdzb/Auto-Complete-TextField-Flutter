@@ -18,6 +18,7 @@ class AutoCompleteTextView extends StatefulWidget
   final tfStyle;
   final tfTextDecoration;
   final tfTextAlign;
+  final tfEnabled;
   //Suggestiondrop Down properties
   final suggestionStyle;
   final suggestionTextAlign;
@@ -37,6 +38,7 @@ class AutoCompleteTextView extends StatefulWidget
       this.tfStyle = const TextStyle(color: Colors.black),
       this.tfTextDecoration = const InputDecoration(),
       this.tfTextAlign = TextAlign.left,
+      this.tfEnabled = true,
       this.suggestionStyle = const TextStyle(color: Colors.black),
       this.suggestionTextAlign = TextAlign.left,
       @required this.getSuggestionsMethod,
@@ -158,15 +160,14 @@ class _AutoCompleteTextViewState extends State<AutoCompleteTextView> {
         controller: widget.controller,
         decoration: widget.tfTextDecoration,
         style: widget.tfStyle,
+        enabled: widget.tfEnabled,
         cursorColor: widget.tfCursorColor,
         cursorWidth: widget.tfCursorWidth,
         textAlign: widget.tfTextAlign,
         focusNode: this._focusNode,
         onChanged: (text) {
           if (text.trim().isNotEmpty) {
-            (widget.onValueChanged != null)
-                ? widget.onValueChanged(text)
-                : () {};
+            widget?.onValueChanged(text);
             isSearching = true;
             scrollController.animateTo(
               0.0,
