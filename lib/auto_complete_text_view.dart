@@ -72,19 +72,22 @@ class _AutoCompleteTextViewState extends State<AutoCompleteTextView> {
       if (_focusNode.hasFocus) {
         this._overlayEntry = this._createOverlayEntry();
         Overlay.of(context).insert(this._overlayEntry);
-        (widget.focusGained != null) ? widget.focusGained() : () {};
+        widget?.focusGained();
+        _onSearchChanged();
       } else {
         this._overlayEntry.remove();
-        (widget.focusLost != null) ? widget.focusLost() : () {};
+        widget?.focusLost();
       }
     });
     widget.controller.addListener(_onSearchChanged);
   }
 
   _onSearchChanged() {
-    if (_debounce?.isActive ?? false) _debounce.cancel();
-    _debounce =
-        Timer(Duration(milliseconds: widget.suggestionsApiFetchDelay), () {
+    if (_debounce?.isActive ?? false) {
+      _debounce.cancel();
+    }
+    
+    _debounce = Timer(Duration(milliseconds: widget.suggestionsApiFetchDelay), () {
       if (isSearching == true) {
         _getSuggestions(widget.controller.text);
       }
@@ -92,64 +95,61 @@ class _AutoCompleteTextViewState extends State<AutoCompleteTextView> {
   }
 
   _getSuggestions(String data) async {
-    if (data.length > 0 && data != null) {
-      List<String> list = await widget.getSuggestionsMethod(data);
-      suggestionsStreamController.sink.add(list);
-    }
-  }
+    List<String> list = await widget.getSuggestionsMethod(data ?? "");
+    suggestionsStreamController.sink.add(list);
+}
 
   OverlayEntry _createOverlayEntry() {
     RenderBox renderBox = context.findRenderObject();
     var size = renderBox.size;
     return OverlayEntry(
-        builder: (context) => Positioned(
-              width: size.width,
-              child: CompositedTransformFollower(
-                link: this._layerLink,
-                showWhenUnlinked: false,
-                offset: Offset(0.0, size.height + 5.0),
-                child: Material(
-                  elevation: 4.0,
-                  child: StreamBuilder<Object>(
-                      stream: suggestionsStreamController.stream,
-                      builder: (context, suggestionData) {
-                        if (suggestionData.hasData &&
-                            widget.controller.text.isNotEmpty) {
-                          suggestionShowList = suggestionData.data;
-                          return ConstrainedBox(
-                            constraints: new BoxConstraints(
-                              maxHeight: 200,
-                            ),
-                            child: ListView.builder(
-                                controller: scrollController,
-                                padding: EdgeInsets.zero,
-                                shrinkWrap: true,
-                                itemCount: suggestionShowList.length,
-                                itemBuilder: (context, index) {
-                                  return ListTile(
-                                    title: Text(
-                                      suggestionShowList[index],
-                                      style: widget.suggestionStyle,
-                                      textAlign: widget.suggestionTextAlign,
-                                    ),
-                                    onTap: () {
-                                      isSearching = false;
-                                      widget.controller.text =
-                                          suggestionShowList[index];
-                                      suggestionsStreamController.sink.add([]);
-                                      widget.onTappedSuggestion(
-                                          widget.controller.text);
-                                    },
-                                  );
-                                }),
-                          );
-                        } else {
-                          return Container();
-                        }
-                      }),
-                ),
-              ),
-            ));
+      builder: (context) => Positioned(
+        width: size.width,
+        child: CompositedTransformFollower(
+          link: this._layerLink,
+          showWhenUnlinked: false,
+          offset: Offset(0.0, size.height + 5.0),
+          child: Material(
+            elevation: 4.0,
+            child: StreamBuilder<Object>(
+              stream: suggestionsStreamController.stream,
+              builder: (context, suggestionData) {
+                if (suggestionData.hasData) {
+                  suggestionShowList = suggestionData.data;
+                  return ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxHeight: 200,
+                    ),
+                    child: ListView.builder(
+                      controller: scrollController,
+                      padding: EdgeInsets.zero,
+                      shrinkWrap: true,
+                      itemCount: suggestionShowList.length,
+                      itemBuilder: (context, index) {
+                        return ListTile(
+                          title: Text(
+                            suggestionShowList[index],
+                            style: widget.suggestionStyle,
+                            textAlign: widget.suggestionTextAlign,
+                          ),
+                          onTap: () {
+                            isSearching = false;
+                            widget.controller.text = suggestionShowList[index];
+                            suggestionsStreamController.sink.add([]);
+                            widget.onTappedSuggestion(widget.controller.text);
+                          },
+                        );
+                      }
+                    ),
+                  );
+                } else {
+                  return Container();
+                }
+              }
+            ),
+          ),
+        ),
+    ));
   }
 
   @override
@@ -166,18 +166,13 @@ class _AutoCompleteTextViewState extends State<AutoCompleteTextView> {
         textAlign: widget.tfTextAlign,
         focusNode: this._focusNode,
         onChanged: (text) {
-          if (text.trim().isNotEmpty) {
-            widget?.onValueChanged(text);
-            isSearching = true;
-            scrollController.animateTo(
-              0.0,
-              curve: Curves.easeOut,
-              duration: const Duration(milliseconds: 300),
-            );
-          } else {
-            isSearching = false;
-            suggestionsStreamController.sink.add([]);
-          }
+          widget?.onValueChanged(text);
+          isSearching = true;
+          scrollController.animateTo(
+            0.0,
+            curve: Curves.easeOut,
+            duration: const Duration(milliseconds: 300),
+          );
         },
       ),
     );
