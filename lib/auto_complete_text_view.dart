@@ -28,10 +28,13 @@ class AutoCompleteTextView extends StatefulWidget
   final Function focusLost;
   final int suggestionsApiFetchDelay;
   final Function onValueChanged;
+  final Function onSubmitted;
+  final TextInputAction tfInputAction;
 
   AutoCompleteTextView(
       {@required this.controller,
       this.onTapCallback,
+      this.onSubmitted,
       this.maxHeight = 200,
       this.tfCursorColor = Colors.white,
       this.tfCursorWidth = 2.0,
@@ -39,6 +42,7 @@ class AutoCompleteTextView extends StatefulWidget
       this.tfTextDecoration = const InputDecoration(),
       this.tfTextAlign = TextAlign.left,
       this.tfEnabled = true,
+      this.tfInputAction = TextInputAction.unspecified,
       this.suggestionStyle = const TextStyle(color: Colors.black),
       this.suggestionTextAlign = TextAlign.left,
       @required this.getSuggestionsMethod,
@@ -165,6 +169,8 @@ class _AutoCompleteTextViewState extends State<AutoCompleteTextView> {
         cursorWidth: widget.tfCursorWidth,
         textAlign: widget.tfTextAlign,
         focusNode: this._focusNode,
+        onSubmitted: widget.onSubmitted,
+        textInputAction: widget.tfInputAction,
         onChanged: (text) {
           if(widget?.onValueChanged != null) widget?.onValueChanged(text);
           isSearching = true;
