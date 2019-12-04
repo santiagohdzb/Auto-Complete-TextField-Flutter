@@ -30,9 +30,11 @@ class AutoCompleteTextView extends StatefulWidget
   final Function onValueChanged;
   final Function onSubmitted;
   final TextInputAction tfInputAction;
-
+  final FocusNode focusNode;
+  
   AutoCompleteTextView(
       {@required this.controller,
+      @required this.focusNode,
       this.onTapCallback,
       this.onSubmitted,
       this.maxHeight = 200,
@@ -62,7 +64,6 @@ class AutoCompleteTextView extends StatefulWidget
 
 class _AutoCompleteTextViewState extends State<AutoCompleteTextView> {
   ScrollController scrollController = ScrollController();
-  FocusNode _focusNode = FocusNode();
   OverlayEntry _overlayEntry;
   LayerLink _layerLink = LayerLink();
   final suggestionsStreamController = new BehaviorSubject<List<String>>();
@@ -72,9 +73,9 @@ class _AutoCompleteTextViewState extends State<AutoCompleteTextView> {
   @override
   void initState() {
     super.initState();
-    _focusNode.addListener(() {
-      if (_focusNode.hasFocus) {
-        isSearching = true;
+    widget.focusNode.addListener(() {
+      if (widget.focusNode.hasFocus) {
+        this.isSearching = true;
         this._overlayEntry = this._createOverlayEntry();
         Overlay.of(context).insert(this._overlayEntry);
         if(widget?.focusGained != null) widget?.focusGained();
@@ -141,6 +142,9 @@ class _AutoCompleteTextViewState extends State<AutoCompleteTextView> {
                             isSearching = false;
                             widget.controller.text = suggestionShowList[index];
                             suggestionsStreamController.sink.add([]);
+                            if (widget.focusNode.hasPrimaryFocus) {
+                              widget.focusNode.unfocus();
+                            }
                             widget.onTappedSuggestion(widget.controller.text);
                           },
                         );
@@ -169,7 +173,7 @@ class _AutoCompleteTextViewState extends State<AutoCompleteTextView> {
         cursorColor: widget.tfCursorColor,
         cursorWidth: widget.tfCursorWidth,
         textAlign: widget.tfTextAlign,
-        focusNode: this._focusNode,
+        focusNode: widget.focusNode,
         onSubmitted: widget.onSubmitted,
         textInputAction: widget.tfInputAction,
         onChanged: (text) {
