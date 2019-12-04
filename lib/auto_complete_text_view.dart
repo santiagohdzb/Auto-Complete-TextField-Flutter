@@ -74,6 +74,7 @@ class _AutoCompleteTextViewState extends State<AutoCompleteTextView> {
     super.initState();
     _focusNode.addListener(() {
       if (_focusNode.hasFocus) {
+        isSearching = true;
         this._overlayEntry = this._createOverlayEntry();
         Overlay.of(context).insert(this._overlayEntry);
         if(widget?.focusGained != null) widget?.focusGained();
