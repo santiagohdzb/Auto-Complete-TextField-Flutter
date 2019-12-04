@@ -72,11 +72,11 @@ class _AutoCompleteTextViewState extends State<AutoCompleteTextView> {
       if (_focusNode.hasFocus) {
         this._overlayEntry = this._createOverlayEntry();
         Overlay.of(context).insert(this._overlayEntry);
-        widget?.focusGained();
+        if(widget?.focusGained != null) widget?.focusGained();
         _onSearchChanged();
       } else {
         this._overlayEntry.remove();
-        widget?.focusLost();
+        if(widget?.focusLost != null) widget?.focusLost();
       }
     });
     widget.controller.addListener(_onSearchChanged);
@@ -166,7 +166,7 @@ class _AutoCompleteTextViewState extends State<AutoCompleteTextView> {
         textAlign: widget.tfTextAlign,
         focusNode: this._focusNode,
         onChanged: (text) {
-          widget?.onValueChanged(text);
+          if(widget?.onValueChanged != null) widget?.onValueChanged(text);
           isSearching = true;
           scrollController.animateTo(
             0.0,
